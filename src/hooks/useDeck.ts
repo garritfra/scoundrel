@@ -23,13 +23,13 @@ const SUITS = [
   "S", // Spades
 ];
 
+const initialDeck = RANKS.flatMap((rank) => SUITS.map((suit) => `${rank}${suit}`));
+
 const useDeck = () => {
-  const [deck, setDeck] = useState(
-    RANKS.flatMap((rank) => SUITS.map((suit) => `${rank}${suit}`))
-  );
+  const [deck, setDeck] = useState(initialDeck);
 
   function reset() {
-    setDeck(RANKS.flatMap((rank) => SUITS.map((suit) => `${rank}${suit}`)));
+    setDeck(initialDeck);
   }
 
   function shuffle() {
@@ -52,16 +52,44 @@ const useDeck = () => {
   }
 
   function draw(count: number) {
-    const drawnCards = deck.slice(0, count);
-    setDeck((currentDeck) => currentDeck.slice(count));
+    let drawnCards: string[] = [];
+    setDeck(currentDeck => {
+      drawnCards = currentDeck.slice(0, count);
+      return currentDeck.slice(count);
+    });
     return drawnCards;
   }
 
   function discard(card: string) {
-    setDeck((currentDeck) => currentDeck.filter((c) => c !== card));
+    setDeck(deck.filter((c) => c !== card));
   }
 
-  return { deck, shuffle, draw, discard, reset };
+  function discardMultiple(cards: string[]) {
+    setDeck((currentDeck) => currentDeck.filter((c) => !cards.includes(c)));
+  }
+
+  function initializeAndDraw() {
+    const redFaces = ["JH", "JD", "QH", "QD", "KH", "KD", "AH", "AD"];
+    const filtered = initialDeck.filter(card => !redFaces.includes(card));
+
+    // Shuffle the filtered deck
+    const shuffled = [...filtered];
+    let currentIndex = filtered.length;
+    while (currentIndex != 0) {
+      const randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+      [shuffled[currentIndex], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[currentIndex]];
+    }
+
+    // Draw 4 cards and update deck
+    const drawnCards = shuffled.slice(0, 4);
+    const remainingDeck = shuffled.slice(4);
+    setDeck(remainingDeck);
+
+    return drawnCards;
+  }
+
+  return { deck, shuffle, draw, discard, discardMultiple, reset, initializeAndDraw };
 };
 
 export default useDeck;

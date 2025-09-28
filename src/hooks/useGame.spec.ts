@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import useGame from "./useGame";
 
@@ -133,6 +133,70 @@ describe("useGame", () => {
       expect(result.current.room).toHaveLength(4);
       expect(result.current.room.slice(0, 3)).toEqual(["2H", "3H", "4H"]);
       expect(result.current.deck).toHaveLength(deckLengthBefore - 1);
+    });
+  });
+
+  describe("shuffle behavior in initialize", () => {
+    test("initialize should shuffle cards properly", () => {
+      const { result } = renderHook(() => useGame());
+
+      // Get the initial deck order
+      const initialDeck = [...result.current.deck];
+
+      act(() => {
+        result.current.initialize();
+      });
+
+      // The deck should be different from initial order
+      expect(result.current.deck).not.toEqual(initialDeck);
+
+      // Should have proper length (52 - 8 red faces - 4 room cards = 40)
+      expect(result.current.deck).toHaveLength(40);
+    });
+
+    test("multiple initializations should produce different room cards", () => {
+      const { result } = renderHook(() => useGame());
+
+      act(() => {
+        result.current.initialize();
+      });
+
+      const firstRoom = [...result.current.room];
+
+      act(() => {
+        result.current.initialize();
+      });
+
+      const secondRoom = [...result.current.room];
+
+      // Rooms should be different (very unlikely to be identical if shuffled)
+      expect(firstRoom).not.toEqual(secondRoom);
+    });
+
+    test("room cards should come from top of shuffled deck", () => {
+      const { result } = renderHook(() => useGame());
+
+      // Mock Math.random to make shuffle predictable
+      const originalRandom = Math.random;
+      Math.random = vi.fn(() => 0.5);
+
+      act(() => {
+        result.current.initialize();
+      });
+
+      const room = result.current.room;
+      const deck = result.current.deck;
+
+      // Room should have 4 cards
+      expect(room).toHaveLength(4);
+
+      // None of the room cards should be in the remaining deck
+      room.forEach(card => {
+        expect(deck).not.toContain(card);
+      });
+
+      // Restore original Math.random
+      Math.random = originalRandom;
     });
   });
 });

@@ -1,42 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import useDeck from "./useDeck";
 
 const useGame = () => {
-  const { deck, shuffle, draw, discard, reset } = useDeck();
+  const { deck, shuffle, draw, discard, discardMultiple, reset, initializeAndDraw } = useDeck();
   const [hand, setHand] = useState<string[]>([]);
   const [discarded, setDiscarded] = useState<string[]>([]);
   const [room, setRoom] = useState<string[]>([]);
   const [health, setHealth] = useState(20);
 
-  const initialize = () => {
-    // Start with a standard 52-card deck.
-    reset();
+  useEffect(() => {
+    console.log("Deck changed:", deck);
+  }, [deck]);
 
-    // Search through the deck and remove all Jokers, Red Face Cards and Red Aces.
-    const redFaces = ["JH", "JD", "QH", "QD", "KH", "KD", "AH", "AD"];
-    for (const card of redFaces) {
-      discard(card);
-    }
+  function initialize() {
+    // Initialize deck, remove red faces, shuffle, and draw 4 cards in one coordinated operation
+    const roomCards = initializeAndDraw();
+    setRoom(roomCards);
+  }
 
-    // Shuffle the remaining cards and place the pile face down on your left.
-    shuffle();
-
-    // Clear the room and draw 4 cards
-    enterRoom();
-  };
-
-  const enterRoom = () => {
+  function enterRoom() {
     // On your first and every turn, flip over cards off the top of the deck,
     // one by one, until you have 4 cards face up in front of you to make an Room.
-    setRoom((currentRoom) => {
-      const cardsNeeded = 4 - currentRoom.length;
-      if (cardsNeeded > 0) {
-        const newCards = draw(cardsNeeded);
-        return [...currentRoom, ...newCards];
-      }
-      return currentRoom;
-    });
-  };
+    const cardsNeeded = 4 - room.length;
+    if (cardsNeeded > 0) {
+      const newCards = draw(cardsNeeded);
+      setRoom(currentRoom => [...currentRoom, ...newCards]);
+    }
+  }
 
   return { deck, shuffle, initialize, room, setRoom, enterRoom };
 };
