@@ -1,16 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import useDeck from "./useDeck";
 
 const useGame = () => {
-  const { deck, shuffle, draw, discard, discardMultiple, reset, initializeAndDraw } = useDeck();
-  const [hand, setHand] = useState<string[]>([]);
-  const [discarded, setDiscarded] = useState<string[]>([]);
+  const { deck, shuffle, draw, initializeAndDraw } = useDeck();
   const [room, setRoom] = useState<string[]>([]);
-  const [health, setHealth] = useState(20);
-
-  useEffect(() => {
-    console.log("Deck changed:", deck);
-  }, [deck]);
 
   function initialize() {
     // Initialize deck, remove red faces, shuffle, and draw 4 cards in one coordinated operation
@@ -21,11 +14,14 @@ const useGame = () => {
   function enterRoom() {
     // On your first and every turn, flip over cards off the top of the deck,
     // one by one, until you have 4 cards face up in front of you to make an Room.
-    const cardsNeeded = 4 - room.length;
-    if (cardsNeeded > 0) {
-      const newCards = draw(cardsNeeded);
-      setRoom(currentRoom => [...currentRoom, ...newCards]);
-    }
+    setRoom((currentRoom) => {
+      const cardsNeeded = 4 - currentRoom.length;
+      if (cardsNeeded > 0) {
+        const newCards = draw(cardsNeeded);
+        return [...currentRoom, ...newCards];
+      }
+      return currentRoom;
+    });
   }
 
   return { deck, shuffle, initialize, room, setRoom, enterRoom };

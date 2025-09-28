@@ -58,8 +58,10 @@ describe("useGame", () => {
       expect(result.current.room).toHaveLength(4);
 
       act(() => {
-        result.current.room.pop();
-        result.current.room.pop();
+        const newRoom = [...result.current.room];
+        newRoom.pop();
+        newRoom.pop();
+        result.current.setRoom(newRoom);
       });
 
       expect(result.current.room).toHaveLength(2);
@@ -191,7 +193,7 @@ describe("useGame", () => {
       expect(room).toHaveLength(4);
 
       // None of the room cards should be in the remaining deck
-      room.forEach(card => {
+      room.forEach((card) => {
         expect(deck).not.toContain(card);
       });
 

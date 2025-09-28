@@ -52,11 +52,8 @@ const useDeck = () => {
   }
 
   function draw(count: number) {
-    let drawnCards: string[] = [];
-    setDeck(currentDeck => {
-      drawnCards = currentDeck.slice(0, count);
-      return currentDeck.slice(count);
-    });
+    const drawnCards = deck.slice(0, count);
+    setDeck(currentDeck => currentDeck.slice(count));
     return drawnCards;
   }
 
