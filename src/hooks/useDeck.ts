@@ -28,8 +28,12 @@ const useDeck = () => {
     RANKS.flatMap((rank) => SUITS.map((suit) => `${rank}${suit}`))
   );
 
+  function reset() {
+    setDeck(RANKS.flatMap((rank) => SUITS.map((suit) => `${rank}${suit}`)));
+  }
+
   function shuffle() {
-    setDeck(currentDeck => {
+    setDeck((currentDeck) => {
       const shuffledDeck = [...currentDeck];
       let currentIndex = currentDeck.length;
 
@@ -49,15 +53,15 @@ const useDeck = () => {
 
   function draw(count: number) {
     const drawnCards = deck.slice(0, count);
-    setDeck(currentDeck => currentDeck.slice(count));
+    setDeck((currentDeck) => currentDeck.slice(count));
     return drawnCards;
   }
 
   function discard(card: string) {
-    setDeck(currentDeck => currentDeck.filter((c) => c !== card));
+    setDeck((currentDeck) => currentDeck.filter((c) => c !== card));
   }
 
-  return { deck, shuffle, draw, discard };
+  return { deck, shuffle, draw, discard, reset };
 };
 
 export default useDeck;
