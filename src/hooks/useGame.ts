@@ -121,6 +121,48 @@ const useGame = (options: GameOptions = defaultGameOptions) => {
     you must fight the Queen barehanded as Queen,12, is greater than 6. Despite this, the Weapon is not
     discarded, as it could still be used against Monsters weaker than a 6.
    */
+  const calculateDamage = (attacker: string): number => {
+    const attackerValue = deckUtils.value(attacker);
+
+    if (attackerValue === null) return 0;
+
+    const weaponCard = hand[0];
+    const weaponValue = weaponCard ? deckUtils.value(weaponCard) : null;
+
+    // Find last defeated monster value (if any)
+    let lastMonsterValue: number | null = null;
+    if (hand.length > 1) {
+      // Monsters are stacked after weapon in hand
+      const lastMonsterCard = hand[hand.length - 1];
+      lastMonsterValue = deckUtils.value(lastMonsterCard);
+    }
+
+    let canUseWeapon = false;
+    if (weaponValue !== null) {
+      // Weapon stacking restriction
+      if (lastMonsterValue === null || attackerValue <= lastMonsterValue) {
+        canUseWeapon = true;
+      }
+    }
+
+    if (canUseWeapon && weaponValue !== null) {
+      // Always use weapon if allowed by stacking
+      const remainingAttackerValue = attackerValue - weaponValue;
+      return remainingAttackerValue > 0 ? remainingAttackerValue : 0;
+    } else if (
+      weaponValue !== null &&
+      (lastMonsterValue === null || attackerValue <= lastMonsterValue)
+    ) {
+      // Weapon present but monster stronger, still use weapon
+      const remainingAttackerValue = attackerValue - weaponValue;
+      return remainingAttackerValue > 0 ? remainingAttackerValue : 0;
+    } else {
+      // Fight barehanded
+      return attackerValue;
+    }
+  };
+
+  // TODO: Refactor to use calculateDamage
   const _fightMonster = (card: string) => {
     const monsterValue = deckUtils.value(card);
     if (monsterValue === null) return;
@@ -151,7 +193,10 @@ const useGame = (options: GameOptions = defaultGameOptions) => {
         _takeDamage(remainingMonsterValue);
       }
       setHand([...hand, card]);
-    } else if (weaponValue !== null && (lastMonsterValue === null || monsterValue <= lastMonsterValue)) {
+    } else if (
+      weaponValue !== null &&
+      (lastMonsterValue === null || monsterValue <= lastMonsterValue)
+    ) {
       // Weapon present but monster stronger, still use weapon
       const remainingMonsterValue = monsterValue - weaponValue;
       _takeDamage(remainingMonsterValue);
@@ -210,6 +255,7 @@ const useGame = (options: GameOptions = defaultGameOptions) => {
     setRoom,
     setHand,
     enterRoom,
+    calculateDamage,
   };
 };
 
