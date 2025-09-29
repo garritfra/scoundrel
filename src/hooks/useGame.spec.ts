@@ -153,5 +153,137 @@ describe("useGame", () => {
         expect(result.current.room).not.toContain(heartCard);
       });
     });
+
+    describe("monster cards", () => {
+      test("fights monster when a club or spade card is triggered", () => {
+        const { result } = renderHook(() =>
+          useGame({ initialHealth: 20, maxHealth: 20 })
+        );
+
+        act(() => {
+          result.current.initialize();
+          result.current.setRoom(["5C", "3D", "4H", "5S"]);
+          result.current.setHand(["6D"]); // Weapon with value 6
+        });
+
+        const clubCard = result.current.room.find((card) => card.endsWith("C"));
+        expect(clubCard).toBeDefined();
+
+        if (!clubCard) return;
+
+        act(() => {
+          result.current.triggerRoomCard(clubCard);
+        });
+
+        // Monster value is 5, weapon value is 6, so no health loss
+        expect(result.current.health).toBe(20);
+        expect(result.current.hand).toHaveLength(2); // Weapon + defeated monster
+        expect(result.current.room).not.toContain(clubCard);
+      });
+
+      test("loses health when fighting a stronger monster without a weapon", () => {
+        const { result } = renderHook(() =>
+          useGame({ initialHealth: 20, maxHealth: 20 })
+        );
+
+        act(() => {
+          result.current.initialize();
+          result.current.setRoom(["7S", "3D", "4H", "5C"]);
+          result.current.setHand([]); // No weapon
+        });
+
+        const spadeCard = result.current.room.find((card) => card.endsWith("S"));
+        expect(spadeCard).toBeDefined();
+
+        if (!spadeCard) return;
+
+        act(() => {
+          result.current.triggerRoomCard(spadeCard);
+        });
+
+        // Monster value is 7, no weapon, so health should decrease by 7
+        expect(result.current.health).toBe(13);
+        expect(result.current.hand).toHaveLength(0); // Still no weapon
+        expect(result.current.room).not.toContain(spadeCard);
+      });
+
+      test("loses health when fighting a stronger monster with a weaker weapon", () => {
+        const { result } = renderHook(() =>
+          useGame({ initialHealth: 20, maxHealth: 20 })
+        );
+
+        act(() => {
+          result.current.initialize();
+          result.current.setRoom(["9C", "3D", "4H", "5S"]);
+          result.current.setHand(["6D"]); // Weapon with value 6
+        });
+
+        const clubCard = result.current.room.find((card) => card.endsWith("C"));
+        expect(clubCard).toBeDefined();
+
+        if (!clubCard) return;
+
+        act(() => {
+          result.current.triggerRoomCard(clubCard);
+        });
+
+        // Monster value is 9, weapon value is 6, so health should decrease by 3
+        expect(result.current.health).toBe(17);
+        expect(result.current.hand).toHaveLength(2); // Weapon + defeated monster
+        expect(result.current.room).not.toContain(clubCard);
+      });
+
+      test("defeats monster when weapon value equals monster value", () => {
+        const { result } = renderHook(() =>
+          useGame({ initialHealth: 20, maxHealth: 20 })
+        );
+
+        act(() => {
+          result.current.initialize();
+          result.current.setRoom(["8S", "3D", "4H", "5C"]);
+          result.current.setHand(["8D"]); // Weapon with value 8
+        });
+
+        const spadeCard = result.current.room.find((card) => card.endsWith("S"));
+        expect(spadeCard).toBeDefined();
+
+        if (!spadeCard) return;
+
+        act(() => {
+          result.current.triggerRoomCard(spadeCard);
+        });
+
+        // Monster value is 8, weapon value is 8, so no health loss
+        expect(result.current.health).toBe(20);
+        expect(result.current.hand).toHaveLength(2); // Weapon + defeated monster
+        expect(result.current.room).not.toContain(spadeCard);
+      });
+
+      test("health does not go below zero when fighting a monster", () => {
+        const { result } = renderHook(() =>
+          useGame({ initialHealth: 5, maxHealth: 20 })
+        );
+
+        act(() => {
+          result.current.initialize();
+          result.current.setRoom(["10S", "3D", "4H", "5C"]);
+          result.current.setHand([]); // No weapon
+        });
+
+        const spadeCard = result.current.room.find((card) => card.endsWith("S"));
+        expect(spadeCard).toBeDefined();
+
+        if (!spadeCard) return;
+
+        act(() => {
+          result.current.triggerRoomCard(spadeCard);
+        });
+
+        // Monster value is 10, no weapon, so health should drop to 0 but not below
+        expect(result.current.health).toBe(0);
+        expect(result.current.hand).toHaveLength(0); // Still no weapon
+        expect(result.current.room).not.toContain(spadeCard);
+      });
+    });
   });
 });

@@ -70,6 +70,10 @@ const useGame = (options: GameOptions = defaultGameOptions) => {
     setHand([]);
   }
 
+  const _takeDamage = (amount: number) => {
+    setHealth((currentHealth) => Math.max(currentHealth - amount, 0));
+  };
+
   const _equipWeapon = (card: string) => {
     setHand([card]);
     const remainingRoom = room.filter((c) => c !== card);
@@ -86,6 +90,53 @@ const useGame = (options: GameOptions = defaultGameOptions) => {
     setRoom(remainingRoom);
   };
 
+  /**
+   * Monster Combat Rules:
+   * - When you choose a Monster, you may fight it barehanded or with an equipped Weapon.
+   * 
+   * Barehanded Combat:
+   * - Subtract the Monster's full value from your Health.
+   * - Move the Monster to the discard deck.
+   * 
+   * Weapon Combat:
+   * - Place the Monster face up on top of the Weapon (and any other Monsters on the Weapon).
+   *   Stagger the placement so the Weapon's number remains visible.
+   * - Subtract the Weapon's value from the Monster's value.
+   * - Subtract any remaining value from your Health.
+   *   Example: Weapon = 5, Monster = 3 → No damage (3 - 5 < 0).
+   *   Example: Weapon = 5, Monster = Jack (11) → 6 damage (11 - 5 = 6).
+   * 
+   * Weapon Usage Restriction:
+   * - After a Weapon is used on a Monster, it can only be used to slay Monsters of equal or lower value than the last Monster it defeated.
+   *   Example: Weapon = 5, last Monster = Queen (12), next Monster = 6 → Weapon can be used.
+   *   Example: Weapon = 5, last Monster = 6, next Monster = Queen (12) → Must fight barehanded.
+   * - The Weapon is not discarded if it cannot be used; it may still be used against weaker Monsters.
+   */
+  const _fightMonster = (card: string) => {
+    const monsterValue = deckUtils.value(card);
+    if (monsterValue === null) return;
+
+    const weaponCard = hand[0];
+    const weaponValue = weaponCard ? deckUtils.value(weaponCard) : null;
+
+    if (weaponValue === null) {
+      // Fight barehanded
+      _takeDamage(monsterValue ?? 0);
+    } else {
+      // Fight with weapon
+      // According to rules: "place the monster face up on top of the weapon"
+      setHand((currentHand) => [...currentHand, card]);
+
+      const remainingMonsterValue = monsterValue - (weaponValue ?? 0);
+      if (remainingMonsterValue > 0) {
+        _takeDamage(remainingMonsterValue);
+      }
+    }
+
+    const remainingRoom = room.filter((c) => c !== card);
+    setRoom(remainingRoom);
+  };
+
   const triggerRoomCard = (card: string) => {
     const suit = deckUtils.suit(card);
 
@@ -98,7 +149,7 @@ const useGame = (options: GameOptions = defaultGameOptions) => {
         break;
       case deckUtils.Suit.Clubs:
       case deckUtils.Suit.Spades:
-        // TODO
+        _fightMonster(card);
         break;
       default:
         // Invalid card suit, do nothing
@@ -116,6 +167,7 @@ const useGame = (options: GameOptions = defaultGameOptions) => {
     initialize,
     room,
     setRoom,
+    setHand,
     health,
   };
 };
