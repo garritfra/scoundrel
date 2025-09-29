@@ -103,26 +103,23 @@ const useGame = (options: GameOptions = defaultGameOptions) => {
   };
 
   /**
-   * Monster Combat Rules:
-   * - When you choose a Monster, you may fight it barehanded or with an equipped Weapon.
-   *
-   * Barehanded Combat:
-   * - Subtract the Monster's full value from your Health.
-   * - Move the Monster to the discard deck.
-   *
-   * Weapon Combat:
-   * - Place the Monster face up on top of the Weapon (and any other Monsters on the Weapon).
-   *   Stagger the placement so the Weapon's number remains visible.
-   * - Subtract the Weapon's value from the Monster's value.
-   * - Subtract any remaining value from your Health.
-   *   Example: Weapon = 5, Monster = 3 → No damage (3 - 5 < 0).
-   *   Example: Weapon = 5, Monster = Jack (11) → 6 damage (11 - 5 = 6).
-   *
-   * Weapon Usage Restriction:
-   * - After a Weapon is used on a Monster, it can only be used to slay Monsters of equal or lower value than the last Monster it defeated.
-   *   Example: Weapon = 5, last Monster = Queen (12), next Monster = 6 → Weapon can be used.
-   *   Example: Weapon = 5, last Monster = 6, next Monster = Queen (12) → Must fight barehanded.
-   * - The Weapon is not discarded if it cannot be used; it may still be used against weaker Monsters.
+    Combat
+    - If you choose to fight the Monster barehanded, subtract its full value from your Health, and
+    move the Monster to the discard deck.
+    - If you choose to fight the Monster with your equipped Weapon, place the monster face up on
+    top of the weapon (and on top of any other Monsters on the Weapon. Be sure to stagger the
+    placement of the Monster so that the Weapon's number is still showing. subtract the
+    Weapon's value from the Monster's value and subtract any remaining value from your health.
+    For example, if your Weapon is a 5, and you place a 3 Monster on it, you take no damage. ( 3-5 < 0)
+    If your Weapon is a 5 and you place a Jack Monster on it, you take 6 damage. ( 11 - 5 = 5 dmg)
+    It is important to note that although you retain your weapons until they are replaced, once a
+    Weapon is used on a monster, the Weapon can then only be used to slay Monsters of a lower
+    value (less than equal) than the previous Monster it had slain.
+    For example, if your 5 Weapon has killed a Queen Monster and you then choose a 6 Monster, you
+    may use your Weapon on the 6 Monster, as 6 is less than 12.
+    But, if you have used your 5 Weapon on a 6 Monster, and you then choose a Queen Monster,
+    you must fight the Queen barehanded as Queen,12, is greater than 6. Despite this, the Weapon is not
+    discarded, as it could still be used against Monsters weaker than a 6.
    */
   const _fightMonster = (card: string) => {
     const monsterValue = deckUtils.value(card);
@@ -131,18 +128,37 @@ const useGame = (options: GameOptions = defaultGameOptions) => {
     const weaponCard = hand[0];
     const weaponValue = weaponCard ? deckUtils.value(weaponCard) : null;
 
-    if (weaponValue === null) {
-      // Fight barehanded
-      _takeDamage(monsterValue ?? 0);
-    } else {
-      // Fight with weapon
-      // According to rules: "place the monster face up on top of the weapon"
-      setHand((currentHand) => [...currentHand, card]);
+    // Find last defeated monster value (if any)
+    let lastMonsterValue: number | null = null;
+    if (hand.length > 1) {
+      // Monsters are stacked after weapon in hand
+      const lastMonsterCard = hand[hand.length - 1];
+      lastMonsterValue = deckUtils.value(lastMonsterCard);
+    }
 
-      const remainingMonsterValue = monsterValue - (weaponValue ?? 0);
+    let canUseWeapon = false;
+    if (weaponValue !== null) {
+      // Weapon stacking restriction
+      if (lastMonsterValue === null || monsterValue <= lastMonsterValue) {
+        canUseWeapon = true;
+      }
+    }
+
+    if (canUseWeapon && weaponValue !== null) {
+      // Always use weapon if allowed by stacking
+      const remainingMonsterValue = monsterValue - weaponValue;
       if (remainingMonsterValue > 0) {
         _takeDamage(remainingMonsterValue);
       }
+      setHand([...hand, card]);
+    } else if (weaponValue !== null && (lastMonsterValue === null || monsterValue <= lastMonsterValue)) {
+      // Weapon present but monster stronger, still use weapon
+      const remainingMonsterValue = monsterValue - weaponValue;
+      _takeDamage(remainingMonsterValue);
+      setHand([...hand, card]);
+    } else {
+      // Fight barehanded
+      _takeDamage(monsterValue);
     }
 
     const remainingRoom = room.filter((c) => c !== card);

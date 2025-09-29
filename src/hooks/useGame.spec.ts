@@ -192,7 +192,9 @@ describe("useGame", () => {
           result.current.setHand([]); // No weapon
         });
 
-        const spadeCard = result.current.room.find((card) => card.endsWith("S"));
+        const spadeCard = result.current.room.find((card) =>
+          card.endsWith("S")
+        );
         expect(spadeCard).toBeDefined();
 
         if (!spadeCard) return;
@@ -244,7 +246,9 @@ describe("useGame", () => {
           result.current.setHand(["8D"]); // Weapon with value 8
         });
 
-        const spadeCard = result.current.room.find((card) => card.endsWith("S"));
+        const spadeCard = result.current.room.find((card) =>
+          card.endsWith("S")
+        );
         expect(spadeCard).toBeDefined();
 
         if (!spadeCard) return;
@@ -270,7 +274,9 @@ describe("useGame", () => {
           result.current.setHand([]); // No weapon
         });
 
-        const spadeCard = result.current.room.find((card) => card.endsWith("S"));
+        const spadeCard = result.current.room.find((card) =>
+          card.endsWith("S")
+        );
         expect(spadeCard).toBeDefined();
 
         if (!spadeCard) return;
@@ -283,6 +289,58 @@ describe("useGame", () => {
         expect(result.current.health).toBe(0);
         expect(result.current.hand).toHaveLength(0); // Still no weapon
         expect(result.current.room).not.toContain(spadeCard);
+      });
+
+      /**
+        * Weapon Usage Restriction:
+        * - After a Weapon is used on a Monster, it can only be used to slay Monsters of equal or lower value than the last Monster it defeated.
+        *   Example: Weapon = 5, last Monster = Queen (12), next Monster = 6 → Weapon can be used.
+        *   Example: Weapon = 5, last Monster = 6, next Monster = Queen (12) → Must fight barehanded.
+        * - The Weapon is not discarded if it cannot be used; it may still be used against weaker Monsters.
+       */
+      test("weapons can only be used on monsters of equal or lower value than the last defeated monster", () => {
+        const { result } = renderHook(() =>
+          useGame({ initialHealth: 20, maxHealth: 20 })
+        );
+
+        act(() => {
+          result.current.initialize();
+          result.current.setRoom(["6C", "QS", "4H", "5D"]);
+          result.current.setHand(["7D"]); // Weapon with value 7
+        });
+
+        const firstMonsterCard = result.current.room.find((card) =>
+          card.endsWith("C")
+        ); // 6C
+        expect(firstMonsterCard).toBeDefined();
+
+        if (!firstMonsterCard) return;
+
+        act(() => {
+          result.current.triggerRoomCard(firstMonsterCard);
+        });
+
+        // First monster value is 6, weapon value is 7, so no health loss
+        expect(result.current.health).toBe(20);
+        expect(result.current.hand).toHaveLength(2); // Weapon + defeated monster
+        expect(result.current.room).not.toContain(firstMonsterCard);
+
+        const secondMonsterCard = result.current.room.find((card) =>
+          card.endsWith("S")
+        ); // QS
+        expect(secondMonsterCard).toBeDefined();
+
+        if (!secondMonsterCard) return;
+
+        act(() => {
+          result.current.triggerRoomCard(secondMonsterCard);
+        });
+
+        // Second monster value is 12 (Queen), weapon value is 7, so weapon cannot be used (fight barehanded)
+        // Health should decrease by 12
+        expect(result.current.health).toBe(8);
+        expect(result.current.hand).toHaveLength(2); // Still weapon + first defeated monster
+        expect(result.current.room).not.toContain(secondMonsterCard);
       });
     });
   });
