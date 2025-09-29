@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import * as deckUtils from "../utils/deck";
 
 const RANKS = [
@@ -31,15 +31,7 @@ const initialDeck = RANKS.flatMap((rank) =>
 const useGame = () => {
   const [deck, setDeck] = useState(initialDeck);
   const [room, setRoom] = useState<string[]>([]);
-
-  useEffect(() => {
-    console.log("Deck changed:", deck);
-  }, [deck]);
-
-  function reset() {
-    setDeck(initialDeck);
-    setRoom([]);
-  }
+  const [hand, setHand] = useState<string[]>([]);
 
   function shuffle() {
     setDeck((currentDeck) => deckUtils.shuffle(currentDeck));
@@ -63,14 +55,15 @@ const useGame = () => {
 
     setDeck(remainingDeck);
     setRoom(roomCards);
+    setHand([]);
   }
 
   return {
     deck,
+    hand,
     shuffle,
     discard,
     discardMultiple,
-    reset,
     initialize,
     room,
     setRoom,

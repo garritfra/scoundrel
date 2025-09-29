@@ -32,6 +32,8 @@ describe("useGame", () => {
       expect(newDeck).not.toContain("AD");
 
       expect(result.current.room).toHaveLength(4);
+
+      expect(result.current.hand).toHaveLength(0);
     });
   });
 });
