@@ -17,3 +17,9 @@
 .deck {
   margin-right: 1em;
 }
+
+.inactive {
+  opacity: 0.3;
+  pointer-events: none;
+  cursor: not-allowed;
+}

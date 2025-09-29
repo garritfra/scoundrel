@@ -4,18 +4,36 @@ import "cardsJS/cards.css";
 import useGame from "./hooks/useGame";
 
 function App() {
-  const { room, hand, initialize, triggerRoomCard, health } = useGame();
+  const {
+    room,
+    hand,
+    initialize,
+    triggerRoomCard,
+    health,
+    canEnterNewRoom,
+    enterRoom,
+  } = useGame();
 
   useEffect(() => {
     initialize();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const _handleEnterRoom = () => {
+    if (canEnterNewRoom) {
+      enterRoom();
+    }
+  };
+
   return (
     <div className="play-area">
       <h1>Health: {health}</h1>
       <div className="hand hhand active-hand room-hand">
-        <img className="card deck" src="cards/Red_Back.svg" />
+        <img
+          className={`card deck ${canEnterNewRoom ? "" : "inactive"}`}
+          src="cards/Red_Back.svg"
+          onClick={_handleEnterRoom}
+        />
         {room.map((card) => (
           <img
             key={card}

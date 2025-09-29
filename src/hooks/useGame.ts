@@ -29,20 +29,29 @@ const initialDeck = RANKS.flatMap((rank) =>
 );
 
 interface GameOptions {
-  initialHealth: number;
-  maxHealth: number;
+  initialHealth?: number;
+  maxHealth?: number;
+  roomSize?: number;
 }
 
 const defaultGameOptions: GameOptions = {
   initialHealth: 20,
   maxHealth: 20,
+  roomSize: 4,
 };
 
 const useGame = (options: GameOptions = defaultGameOptions) => {
+  // TODO: This will fail once we introduce a different type into the options
+  const _getOption = (key: keyof GameOptions) => {
+    return options[key] ?? defaultGameOptions[key]!;
+  };
+
   const [deck, setDeck] = useState(initialDeck);
   const [room, setRoom] = useState<string[]>([]);
   const [hand, setHand] = useState<string[]>([]);
-  const [health, setHealth] = useState(options.initialHealth);
+  const [health, setHealth] = useState(_getOption("initialHealth"));
+
+  const canEnterNewRoom = room.length <= 1;
 
   function shuffle() {
     setDeck((currentDeck) => deckUtils.shuffle(currentDeck));
@@ -62,11 +71,14 @@ const useGame = (options: GameOptions = defaultGameOptions) => {
 
     const shuffled = deckUtils.shuffle(filtered);
 
-    const [roomCards, remainingDeck] = deckUtils.draw(shuffled, 4);
+    const [roomCards, remainingDeck] = deckUtils.draw(
+      shuffled,
+      _getOption("roomSize")
+    );
 
     setDeck(remainingDeck);
     setRoom(roomCards);
-    setHealth(options.initialHealth);
+    setHealth(_getOption("initialHealth"));
     setHand([]);
   }
 
@@ -84,7 +96,7 @@ const useGame = (options: GameOptions = defaultGameOptions) => {
     setHealth((currentHealth) => {
       const value = deckUtils.value(card);
       if (value === null) return currentHealth;
-      return Math.min(currentHealth + value, options.maxHealth);
+      return Math.min(currentHealth + value, _getOption("maxHealth"));
     });
     const remainingRoom = room.filter((c) => c !== card);
     setRoom(remainingRoom);
@@ -93,11 +105,11 @@ const useGame = (options: GameOptions = defaultGameOptions) => {
   /**
    * Monster Combat Rules:
    * - When you choose a Monster, you may fight it barehanded or with an equipped Weapon.
-   * 
+   *
    * Barehanded Combat:
    * - Subtract the Monster's full value from your Health.
    * - Move the Monster to the discard deck.
-   * 
+   *
    * Weapon Combat:
    * - Place the Monster face up on top of the Weapon (and any other Monsters on the Weapon).
    *   Stagger the placement so the Weapon's number remains visible.
@@ -105,7 +117,7 @@ const useGame = (options: GameOptions = defaultGameOptions) => {
    * - Subtract any remaining value from your Health.
    *   Example: Weapon = 5, Monster = 3 → No damage (3 - 5 < 0).
    *   Example: Weapon = 5, Monster = Jack (11) → 6 damage (11 - 5 = 6).
-   * 
+   *
    * Weapon Usage Restriction:
    * - After a Weapon is used on a Monster, it can only be used to slay Monsters of equal or lower value than the last Monster it defeated.
    *   Example: Weapon = 5, last Monster = Queen (12), next Monster = 6 → Weapon can be used.
@@ -157,18 +169,31 @@ const useGame = (options: GameOptions = defaultGameOptions) => {
     }
   };
 
+  const enterRoom = () => {
+    if (!canEnterNewRoom) return;
+
+    const [newRoomCards, remainingDeck] = deckUtils.draw(
+      deck,
+      _getOption("roomSize") - room.length
+    );
+    setDeck(remainingDeck);
+    setRoom([...room, ...newRoomCards]);
+  };
+
   return {
+    health,
     deck,
     hand,
+    room,
+    canEnterNewRoom,
     triggerRoomCard,
     shuffle,
     discard,
     discardMultiple,
     initialize,
-    room,
     setRoom,
     setHand,
-    health,
+    enterRoom,
   };
 };
 

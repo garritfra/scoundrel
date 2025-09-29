@@ -286,4 +286,60 @@ describe("useGame", () => {
       });
     });
   });
+
+  describe("enterRoom function", () => {
+    test("enters a new room when allowed", () => {
+      const { result } = renderHook(() => useGame());
+
+      act(() => {
+        result.current.initialize();
+      });
+
+      const initialRoom = result.current.room;
+
+      act(() => {
+        result.current.setRoom(["2H"]); // Set room to 1 card to allow entering new room
+      });
+
+      act(() => {
+        result.current.enterRoom();
+      });
+
+      const newRoom = result.current.room;
+      const newDeck = result.current.deck;
+
+      expect(newRoom).toHaveLength(4);
+      expect(newDeck).toHaveLength(37); // 52 - 12 removed - 3 drawn for new room
+
+      // Ensure the new room is different from the initial room
+      expect(newRoom).not.toEqual(initialRoom);
+    });
+
+    test("does not enter a new room when not allowed", () => {
+      const { result } = renderHook(() => useGame());
+
+      act(() => {
+        result.current.initialize();
+      });
+
+      // Manually set room to have more than 1 card to block entering a new room
+      act(() => {
+        result.current.setRoom(["2H", "3H", "4H", "5H"]);
+      });
+
+      const initialRoom = result.current.room;
+      const initialDeck = result.current.deck;
+
+      act(() => {
+        result.current.enterRoom();
+      });
+
+      const newRoom = result.current.room;
+      const newDeck = result.current.deck;
+
+      // Room and deck should remain unchanged
+      expect(newRoom).toEqual(initialRoom);
+      expect(newDeck).toEqual(initialDeck);
+    });
+  });
 });
