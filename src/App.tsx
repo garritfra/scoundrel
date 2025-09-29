@@ -5,6 +5,7 @@ import useGame from "./hooks/useGame";
 
 function App() {
   const {
+    deck,
     room,
     hand,
     initialize,
@@ -28,6 +29,7 @@ function App() {
   return (
     <div className="play-area">
       <h1>Health: {health}</h1>
+      <p>Remaining Deck Cards: {deck.length}</p>
       <div className="hand hhand active-hand room-hand">
         <img
           className={`card deck ${canEnterNewRoom ? "" : "inactive"}`}
