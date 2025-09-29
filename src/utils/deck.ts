@@ -1,3 +1,11 @@
+export const Suit = {
+  Hearts: "H",
+  Diamonds: "D",
+  Clubs: "C",
+  Spades: "S",
+} as const;
+export type Suit = (typeof Suit)[keyof typeof Suit];
+
 export const shuffle = (cards: string[]) => {
   const shuffledDeck = [...cards];
   let currentIndex = shuffledDeck.length;
@@ -26,4 +34,19 @@ export const draw = (cards: string[], count: number): [string[], string[]] => {
     // Remaining deck
     cards.slice(count),
   ];
+};
+export const suit = (card: string): Suit | null => {
+  const suitChar = card.slice(-1);
+  switch (suitChar) {
+    case Suit.Hearts:
+      return Suit.Hearts;
+    case Suit.Diamonds:
+      return Suit.Diamonds;
+    case Suit.Clubs:
+      return Suit.Clubs;
+    case Suit.Spades:
+      return Suit.Spades;
+    default:
+      return null;
+  }
 };

@@ -4,10 +4,11 @@ import "cardsJS/cards.css";
 import useGame from "./hooks/useGame";
 
 function App() {
-  const { room, hand, initialize } = useGame();
+  const { room, hand, initialize, triggerRoomCard } = useGame();
 
   useEffect(() => {
     initialize();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -15,7 +16,12 @@ function App() {
       <div className="hand hhand active-hand room-hand">
         <img className="card deck" src="cards/Red_Back.svg" />
         {room.map((card) => (
-          <img key={card} className="card" src={`cards/${card}.svg`} />
+          <img
+            key={card}
+            className="card"
+            src={`cards/${card}.svg`}
+            onClick={() => triggerRoomCard(card)}
+          />
         ))}
       </div>
       <div className="hand hhand-compact weapon-hand">

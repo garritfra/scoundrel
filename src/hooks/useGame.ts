@@ -58,9 +58,26 @@ const useGame = () => {
     setHand([]);
   }
 
+  const _equipWeapon = (card: string) => {
+    setHand([card]);
+    const remaininRoom = room.filter((c) => c !== card);
+    setRoom(remaininRoom);
+  };
+
+  const triggerRoomCard = (card: string) => {
+    const suit = deckUtils.suit(card);
+
+    switch (suit) {
+      case deckUtils.Suit.Diamonds:
+        _equipWeapon(card);
+        break;
+    }
+  };
+
   return {
     deck,
     hand,
+    triggerRoomCard,
     shuffle,
     discard,
     discardMultiple,

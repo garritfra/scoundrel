@@ -91,4 +91,20 @@ describe("deck utilities", () => {
       expect(remainingDeck).toEqual(originalDeck);
     });
   });
+
+  describe("suit", () => {
+    test("returns correct suit for valid cards", () => {
+      expect(deckUtils.suit("2H")).toBe(deckUtils.Suit.Hearts);
+      expect(deckUtils.suit("10D")).toBe(deckUtils.Suit.Diamonds);
+      expect(deckUtils.suit("KS")).toBe(deckUtils.Suit.Spades);
+      expect(deckUtils.suit("AC")).toBe(deckUtils.Suit.Clubs);
+    });
+
+    test("returns null for invalid cards", () => {
+      expect(deckUtils.suit("2X")).toBeNull();
+      expect(deckUtils.suit("10")).toBeNull();
+      expect(deckUtils.suit("")).toBeNull();
+      expect(deckUtils.suit("Joker")).toBeNull();
+    });
+  });
 });
