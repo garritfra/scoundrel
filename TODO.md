@@ -9,3 +9,4 @@
 - Sound effects
 - Scoring display at end of game
 - Save game state in local storage
+- Game seed
