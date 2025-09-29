@@ -35,6 +35,23 @@ describe("useGame", () => {
     });
   });
 
+  describe("draw function", () => {
+    test("draw reduces deck size and returns correct cards", () => {
+      const { result } = renderHook(() => useGame());
+      const initialDeck = [...result.current.deck];
+
+      let drawnCards: string[] = [];
+      act(() => {
+        drawnCards = result.current.draw(5);
+      });
+
+      expect(drawnCards).toHaveLength(5);
+      expect(result.current.deck).toHaveLength(initialDeck.length - 5);
+      expect(drawnCards).toEqual(initialDeck.slice(0, 5));
+      expect(result.current.deck).toEqual(initialDeck.slice(5));
+    });
+  });
+
   describe("enterRoom function", () => {
     test("enterRoom adds 4 cards to the room", () => {
       const { result } = renderHook(() => useGame());
