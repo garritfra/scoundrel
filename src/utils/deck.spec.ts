@@ -107,4 +107,26 @@ describe("deck utilities", () => {
       expect(deckUtils.suit("Joker")).toBeNull();
     });
   });
+
+  describe("value", () => {
+    test("returns correct value for numbered cards", () => {
+      expect(deckUtils.value("2H")).toBe(2);
+      expect(deckUtils.value("10D")).toBe(10);
+      expect(deckUtils.value("7S")).toBe(7);
+    });
+
+    test("returns correct value for face cards", () => {
+      expect(deckUtils.value("JH")).toBe(11);
+      expect(deckUtils.value("QD")).toBe(12);
+      expect(deckUtils.value("KS")).toBe(13);
+      expect(deckUtils.value("AC")).toBe(14);
+    });
+
+    test("returns null for invalid cards", () => {
+      expect(deckUtils.value("1H")).toBeNull();
+      expect(deckUtils.value("11D")).toBeNull();
+      expect(deckUtils.value("X")).toBeNull();
+      expect(deckUtils.value("")).toBeNull();
+    });
+  });
 });

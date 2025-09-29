@@ -4,7 +4,7 @@ import "cardsJS/cards.css";
 import useGame from "./hooks/useGame";
 
 function App() {
-  const { room, hand, initialize, triggerRoomCard } = useGame();
+  const { room, hand, initialize, triggerRoomCard, health } = useGame();
 
   useEffect(() => {
     initialize();
@@ -13,6 +13,7 @@ function App() {
 
   return (
     <div className="play-area">
+      <h1>Health: {health}</h1>
       <div className="hand hhand active-hand room-hand">
         <img className="card deck" src="cards/Red_Back.svg" />
         {room.map((card) => (

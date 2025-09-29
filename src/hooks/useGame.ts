@@ -28,10 +28,21 @@ const initialDeck = RANKS.flatMap((rank) =>
   SUITS.map((suit) => `${rank}${suit}`)
 );
 
-const useGame = () => {
+interface GameOptions {
+  initialHealth: number;
+  maxHealth: number;
+}
+
+const defaultGameOptions: GameOptions = {
+  initialHealth: 20,
+  maxHealth: 20,
+};
+
+const useGame = (options: GameOptions = defaultGameOptions) => {
   const [deck, setDeck] = useState(initialDeck);
   const [room, setRoom] = useState<string[]>([]);
   const [hand, setHand] = useState<string[]>([]);
+  const [health, setHealth] = useState(options.initialHealth);
 
   function shuffle() {
     setDeck((currentDeck) => deckUtils.shuffle(currentDeck));
@@ -55,13 +66,24 @@ const useGame = () => {
 
     setDeck(remainingDeck);
     setRoom(roomCards);
+    setHealth(options.initialHealth);
     setHand([]);
   }
 
   const _equipWeapon = (card: string) => {
     setHand([card]);
-    const remaininRoom = room.filter((c) => c !== card);
-    setRoom(remaininRoom);
+    const remainingRoom = room.filter((c) => c !== card);
+    setRoom(remainingRoom);
+  };
+
+  const _drinkPotion = (card: string) => {
+    setHealth((currentHealth) => {
+      const value = deckUtils.value(card);
+      if (value === null) return currentHealth;
+      return Math.min(currentHealth + value, options.maxHealth);
+    });
+    const remainingRoom = room.filter((c) => c !== card);
+    setRoom(remainingRoom);
   };
 
   const triggerRoomCard = (card: string) => {
@@ -70,6 +92,16 @@ const useGame = () => {
     switch (suit) {
       case deckUtils.Suit.Diamonds:
         _equipWeapon(card);
+        break;
+      case deckUtils.Suit.Hearts:
+        _drinkPotion(card);
+        break;
+      case deckUtils.Suit.Clubs:
+      case deckUtils.Suit.Spades:
+        // TODO
+        break;
+      default:
+        // Invalid card suit, do nothing
         break;
     }
   };
@@ -84,6 +116,7 @@ const useGame = () => {
     initialize,
     room,
     setRoom,
+    health,
   };
 };
 
