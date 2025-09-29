@@ -3,7 +3,14 @@ import "./App.css";
 import "cardsJS/cards.css";
 import useGame from "./hooks/useGame";
 import "@mantine/core/styles.css";
-import { MantineProvider, Text, Tooltip } from "@mantine/core";
+import {
+  Button,
+  Flex,
+  MantineProvider,
+  Space,
+  Text,
+  Tooltip,
+} from "@mantine/core";
 import { useColorScheme } from "@mantine/hooks";
 import * as deckUtils from "./utils/deck";
 
@@ -112,6 +119,18 @@ function App() {
           <img className="card hidden" src={`cards/Red_Back.svg`} />
         </div>
       </div>
+      <Space h="xl" />
+      <Flex direction={"row"} gap="xs">
+        <Button
+          component="a"
+          href="https://github.com/garritfra/scoundrel/blob/main/Scoundrel.pdf"
+        >
+          Rules
+        </Button>
+        <Button component="a" href="https://github.com/garritfra/scoundrel">
+          Source Code
+        </Button>
+      </Flex>
     </MantineProvider>
   );
 }
