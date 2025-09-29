@@ -123,7 +123,7 @@ function App() {
       <Flex direction={"row"} gap="xs">
         <Button
           component="a"
-          href="https://github.com/garritfra/scoundrel/blob/main/Scoundrel.pdf"
+          href="https://raw.githubusercontent.com/garritfra/scoundrel/refs/heads/main/Scoundrel.pdf"
         >
           Rules
         </Button>
