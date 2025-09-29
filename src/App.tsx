@@ -49,6 +49,7 @@ function App() {
         {hand.map((card) => (
           <img key={card} className="card" src={`cards/${card}.svg`} />
         ))}
+        <img className="card hidden" src={`cards/Red_Back.svg`} />
       </div>
     </div>
   );
