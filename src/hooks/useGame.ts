@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import * as deckUtils from "../utils/deck";
 
 const RANKS = [
   "2",
@@ -23,7 +24,9 @@ const SUITS = [
   "S", // Spades
 ];
 
-const initialDeck = RANKS.flatMap((rank) => SUITS.map((suit) => `${rank}${suit}`));
+const initialDeck = RANKS.flatMap((rank) =>
+  SUITS.map((suit) => `${rank}${suit}`)
+);
 
 const useGame = () => {
   const [deck, setDeck] = useState(initialDeck);
@@ -39,74 +42,39 @@ const useGame = () => {
   }
 
   function shuffle() {
-    setDeck((currentDeck) => {
-      const shuffledDeck = [...currentDeck];
-      let currentIndex = currentDeck.length;
-
-      while (currentIndex != 0) {
-        const randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex--;
-
-        [shuffledDeck[currentIndex], shuffledDeck[randomIndex]] = [
-          shuffledDeck[randomIndex],
-          shuffledDeck[currentIndex],
-        ];
-      }
-
-      return shuffledDeck;
-    });
-  }
-
-  function draw(count: number) {
-    const drawnCards = deck.slice(0, count);
-    setDeck(currentDeck => currentDeck.slice(count));
-    return drawnCards;
+    setDeck((currentDeck) => deckUtils.shuffle(currentDeck));
   }
 
   function discard(card: string) {
-    setDeck(deck.filter((c) => c !== card));
+    setDeck((currentDeck) => deckUtils.discard(currentDeck, [card]));
   }
 
   function discardMultiple(cards: string[]) {
-    setDeck((currentDeck) => currentDeck.filter((c) => !cards.includes(c)));
+    setDeck((currentDeck) => deckUtils.discard(currentDeck, cards));
   }
 
   function initialize() {
-    // Remove red face cards, shuffle, and draw room cards in one operation
     const redFaces = ["JH", "JD", "QH", "QD", "KH", "KD", "AH", "AD"];
-    const filtered = initialDeck.filter(card => !redFaces.includes(card));
+    const filtered = deckUtils.discard(initialDeck, redFaces);
 
-    // Shuffle the filtered deck
-    const shuffled = [...filtered];
-    let currentIndex = filtered.length;
-    while (currentIndex != 0) {
-      const randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex--;
-      [shuffled[currentIndex], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[currentIndex]];
-    }
+    const shuffled = deckUtils.shuffle(filtered);
 
-    // Draw 4 cards for room and set remaining deck
-    const roomCards = shuffled.slice(0, 4);
-    const remainingDeck = shuffled.slice(4);
+    const [roomCards, remainingDeck] = deckUtils.draw(shuffled, 4);
 
     setDeck(remainingDeck);
     setRoom(roomCards);
   }
 
-  function enterRoom() {
-    // On your first and every turn, flip over cards off the top of the deck,
-    // one by one, until you have 4 cards face up in front of you to make an Room.
-    setRoom((currentRoom) => {
-      const cardsNeeded = 4 - currentRoom.length;
-      if (cardsNeeded > 0) {
-        const newCards = draw(cardsNeeded);
-        return [...currentRoom, ...newCards];
-      }
-      return currentRoom;
-    });
-  }
-
-  return { deck, shuffle, draw, discard, discardMultiple, reset, initialize, room, setRoom, enterRoom };
+  return {
+    deck,
+    shuffle,
+    discard,
+    discardMultiple,
+    reset,
+    initialize,
+    room,
+    setRoom,
+  };
 };
 
 export default useGame;
