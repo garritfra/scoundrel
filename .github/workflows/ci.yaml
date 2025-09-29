@@ -1,0 +1,25 @@
+on: [push, pull_request]
+
+name: Continuous integration
+jobs:
+  test-build:
+    name: test build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        name: Checkout
+      - name: Cache Node Modules
+        id: cache-node-modules
+        uses: actions/cache@v4.2.4
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('package-lock.json') }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm install
+      - name: Run Tests
+        run: |
+          npm test -- --run
+      - name: Build
+        run: |
+          npm run build
