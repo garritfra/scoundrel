@@ -11,6 +11,9 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@mantine/core": "^8.3.2",
+    "@mantine/hooks": "^8.3.2",
+    "@mantine/modals": "^8.3.2",
     "cardsJS": "^1.1.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
@@ -26,6 +29,9 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.4.0",
     "jsdom": "^27.0.0",
+    "postcss": "^8.5.6",
+    "postcss-preset-mantine": "^1.18.0",
+    "postcss-simple-vars": "^7.0.1",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.44.0",
     "vite": "^7.1.7",

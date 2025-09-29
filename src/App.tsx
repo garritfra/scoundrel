@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import "./App.css";
 import "cardsJS/cards.css";
 import useGame from "./hooks/useGame";
+import "@mantine/core/styles.css";
+import { MantineProvider } from "@mantine/core";
 
 function App() {
   const {
@@ -27,31 +29,33 @@ function App() {
   };
 
   return (
-    <div className="play-area">
-      <h1>Health: {health}</h1>
-      <p>Remaining Deck Cards: {deck.length}</p>
-      <div className="hand hhand active-hand room-hand">
-        <img
-          className={`card deck ${canEnterNewRoom ? "" : "inactive"}`}
-          src="cards/Red_Back.svg"
-          onClick={_handleEnterRoom}
-        />
-        {room.map((card) => (
+    <MantineProvider forceColorScheme="dark">
+      <div className="play-area">
+        <h1>Health: {health}</h1>
+        <p>Remaining Deck Cards: {deck.length}</p>
+        <div className="hand hhand active-hand room-hand">
           <img
-            key={card}
-            className="card"
-            src={`cards/${card}.svg`}
-            onClick={() => triggerRoomCard(card)}
+            className={`card deck ${canEnterNewRoom ? "" : "inactive"}`}
+            src="cards/Red_Back.svg"
+            onClick={_handleEnterRoom}
           />
-        ))}
+          {room.map((card) => (
+            <img
+              key={card}
+              className="card"
+              src={`cards/${card}.svg`}
+              onClick={() => triggerRoomCard(card)}
+            />
+          ))}
+        </div>
+        <div className="hand hhand-compact weapon-hand">
+          {hand.map((card) => (
+            <img key={card} className="card" src={`cards/${card}.svg`} />
+          ))}
+          <img className="card hidden" src={`cards/Red_Back.svg`} />
+        </div>
       </div>
-      <div className="hand hhand-compact weapon-hand">
-        {hand.map((card) => (
-          <img key={card} className="card" src={`cards/${card}.svg`} />
-        ))}
-        <img className="card hidden" src={`cards/Red_Back.svg`} />
-      </div>
-    </div>
+    </MantineProvider>
   );
 }
 
